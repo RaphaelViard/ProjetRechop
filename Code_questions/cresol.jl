@@ -14,10 +14,10 @@ nb_SS = length(current_instance.substation_locations) #Nombre de substation dans
 
 turb_links = zeros(Int,nb_WT) #Les trois tableaux suivants sont ceux qu'on va mettre dans notre type "solution" pour créer le json
 st_cabl = zeros(Int,nb_SS)
-sub = Vector{SubStation}() #Les substations qu'on va construire
+sub = Vector{KIRO2023.SubStation}() #Les substations qu'on va construire
 
 function find_nearest_substation(instance::Instance)
-    nearest_substations = Vector{SubStation}()
+    nearest_substations = Vector{KIRO2023.SubStation}()
     
     for turbine in instance.wind_turbines
         min_distance = Inf
