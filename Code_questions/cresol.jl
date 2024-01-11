@@ -7,7 +7,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_medium)
+current_instance = KIRO2023.read_instance(chemin_huge)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -78,6 +78,13 @@ end
 Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
 
 #KIRO2023.is_feasible(Heuristique,current_instance)
-KIRO2023.cost(Heuristique,current_instance)
+#KIRO2023.cost(Heuristique,current_instance)
 
-
+path1= "solutions/huge.json.json"
+Soltangz = KIRO2023.read_solution(path1)
+KIRO2023.nb_station_locations(current_instance)
+Solultime = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
+size(Solultime.inter_station_cables)
+KIRO2023.is_feasible(Solultime,current_instance)
+KIRO2023.cost(Solultime,current_instance)
+write_solution(Solultime,"solution/HUGE10000.json")
