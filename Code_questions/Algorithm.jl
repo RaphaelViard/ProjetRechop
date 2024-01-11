@@ -50,7 +50,9 @@ function copy_solution(solution::Solution)
 end
 
 
-function voisins(solution::Solution)
+# Voisinage d'une solution réalisable : V est un voisin de S ssi on change le type et le land_cable d'une seule substation
+
+function voisins(instance::Instance,solution::Solution)
 
     L=Vector{Solution}()    # vecteur des voisins
 
@@ -58,6 +60,24 @@ function voisins(solution::Solution)
         for sub_type in instance.substation_types
             for cable_type in instance.land_substation_cable_types
                 voisin = copy(solution)
-                voisin.substation_type = sub_type
-                voisin.land_cable_type = cable_type
+                voisin.SubStation.substation_type = sub_type
+                voisin.SubStation.land_cable_type = cable_type
                 push!(L,voisin)
+
+    return L
+end
+
+# Fonction qui retourne le meilleur voisin de la solution
+
+function best_neighbor(instance::Instance,solution::Solution)
+    L = voisins(instance,solution)
+    best_neighbor = nothing
+
+    for neighbor in L
+        if cost(instance, neighbor) < cost(instance, best_neighbor) 
+            best_neighbor = neighbor
+
+    return best_neighbor
+end
+
+        
