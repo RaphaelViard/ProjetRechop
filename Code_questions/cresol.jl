@@ -7,7 +7,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_huge)
+current_instance = KIRO2023.read_instance(chemin_small)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -53,13 +53,13 @@ function find_nearest_substation(instance::KIRO2023.Instance)
 end
 
 
-Proches = find_nearest_substation(current_instance) #On selectionne les SS qu'on va construire
+Proches = find_nearest_substation(current_instance) #On selectionne les SS qu'on va construire -> Une liste de location
 
 minFIXCLANDCABLES = argmin([current_instance.land_substation_cable_types[i].fixed_cost for i in 1:length(current_instance.land_substation_cable_types)])
 minCOUTSS = min_cost_index = argmin([current_instance.substation_types[i].cost for i in 1:length(current_instance.substation_types)]) #On prend celles avec le plus petit cout fixe
 
-for i in 1:length(Proches)
-    push!(sub,KIRO2023.SubStation(id=Proches[i].id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
+for i in 1:length(Proches)#                                         minCOUTSS              #minFIXLANDCABLES
+    push!(sub,KIRO2023.SubStation(id=Proches[i].id, substation_type=minCOUTSS,land_cable_type=minFIXLANDCABLES) )
 end
 
 for i in 1:CardVT
@@ -75,16 +75,23 @@ for i in 1:CardVT
     turb_links[i]=k
 end
 
+uu=length(Proches)
+
+#st_cabl[Proches[1].id,Proches[2].id]=1
+#st_cabl[Proches[2].id,Proches[1].id]=1
+#st_cabl[Proches[3].id,Proches[4].id]=1
+#st_cabl[Proches[4].id,Proches[3].id]=1
+
 Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
 
 #KIRO2023.is_feasible(Heuristique,current_instance)
-#KIRO2023.cost(Heuristique,current_instance)
+KIRO2023.cost(Heuristique,current_instance)
 
-path1= "solutions/huge.json.json"
-Soltangz = KIRO2023.read_solution(path1)
-KIRO2023.nb_station_locations(current_instance)
-Solultime = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
-size(Solultime.inter_station_cables)
-KIRO2023.is_feasible(Solultime,current_instance)
-KIRO2023.cost(Solultime,current_instance)
-write_solution(Solultime,"solution/HUGE10000.json")
+#path1= "solutions/huge.json.json"
+#Soltangz = KIRO2023.read_solution(path1)
+#KIRO2023.nb_station_locations(current_instance)
+#Solultime = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
+#size(Solultime.inter_station_cables)
+#KIRO2023.is_feasible(Solultime,current_instance)
+#KIRO2023.cost(Solultime,current_instance)
+#KIRO2023.write_solution(Solultime,"solutions/HUGE10000.json")
