@@ -1,5 +1,6 @@
 import .KIRO2023
 
+# include("Algorithm.jl")
 
 chemin_tiny = "instances/KIRO-tiny.json"
 chemin_small = "instances/KIRO-small.json"
@@ -59,20 +60,20 @@ minFIXCLANDCABLES = argmin([current_instance.land_substation_cable_types[i].fixe
 minCOUTSS = min_cost_index = argmin([current_instance.substation_types[i].cost for i in 1:length(current_instance.substation_types)]) #On prend celles avec le plus petit cout fixe
 
 for i in 1:length(Proches)#                                         minCOUTSS              #minFIXLANDCABLES
-    push!(sub,KIRO2023.SubStation(id=Proches[i].id, substation_type=minCOUTSS,land_cable_type=minFIXLANDCABLES) )
+    push!(sub,KIRO2023.SubStation(id=Proches[i].id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
 end
 
 for i in 1:CardVT
     dist=9999999
     k=0
     for j in 1:length(Proches)
-        newdist = KIRO2023.distance(current_instance.wind_turbines[i],current_instance.substation_locations[j])
+        newdist = KIRO2023.distance(current_instance.wind_turbines[i],Proches[j])
         if  newdist < dist
             dist = newdist
             k=j
         end
     end
-    turb_links[i]=k
+    turb_links[i]=Proches[k].id
 end
 
 uu=length(Proches)
@@ -85,7 +86,17 @@ uu=length(Proches)
 Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
 
 #KIRO2023.is_feasible(Heuristique,current_instance)
-KIRO2023.cost(Heuristique,current_instance)
+a = KIRO2023.cost(Heuristique,current_instance)
+
+println(a)
+
+# V = voisins(current_instance, Heuristique)
+
+#Heuristique2 = best_neighbor(current_instance, Heuristique)
+
+#c = KIRO2023.cost(Heuristique2,current_instance)
+
+#println(c)
 
 #path1= "solutions/huge.json.json"
 #Soltangz = KIRO2023.read_solution(path1)
