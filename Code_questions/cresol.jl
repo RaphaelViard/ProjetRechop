@@ -1,6 +1,6 @@
-import .KIRO2023
+import KIRO2023
 
-# include("Algorithm.jl")
+include("Algorithm.jl")
 
 chemin_tiny = "instances/KIRO-tiny.json"
 chemin_small = "instances/KIRO-small.json"
@@ -59,7 +59,7 @@ Proches = find_nearest_substation(current_instance) #On selectionne les SS qu'on
 minFIXCLANDCABLES = argmin([current_instance.land_substation_cable_types[i].fixed_cost for i in 1:length(current_instance.land_substation_cable_types)])
 minCOUTSS = min_cost_index = argmin([current_instance.substation_types[i].cost for i in 1:length(current_instance.substation_types)]) #On prend celles avec le plus petit cout fixe
 
-for i in 1:length(Proches)#                                         minCOUTSS              #minFIXLANDCABLES
+for i in 1:length(Proches)
     push!(sub,KIRO2023.SubStation(id=Proches[i].id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
 end
 
@@ -90,7 +90,7 @@ a = KIRO2023.cost(Heuristique,current_instance)
 
 println(a)
 
-# V = voisins(current_instance, Heuristique)
+ V = voisins(current_instance, Heuristique)
 
 #Heuristique2 = best_neighbor(current_instance, Heuristique)
 

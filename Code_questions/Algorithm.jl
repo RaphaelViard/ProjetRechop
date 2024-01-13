@@ -35,7 +35,7 @@ end
 
 #Créer une nouvelle structure avec les modifications : Si vous voulez maintenir l'immutabilité, créez une nouvelle structure SubStation au lieu de modifier les champs de la structure existante.
 
-voisin.substations[i] = KIRO2023.SubStation(id=voisin.substations[i].id, substation_type=instance.substation_types[j].id, land_cable_type=instance.land_substation_cable_types[k])
+#voisin.substations[i] = KIRO2023.SubStation(id=voisin.substations[i].id, substation_type=instance.substation_types[j].id, land_cable_type=instance.land_substation_cable_types[k])
 
 
 # Fonction qui retourne le meilleur voisin de la solution
