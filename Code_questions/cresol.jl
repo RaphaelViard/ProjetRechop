@@ -88,15 +88,16 @@ Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=
 #KIRO2023.is_feasible(Heuristique,current_instance)
 a = KIRO2023.cost(Heuristique,current_instance)
 
-println(a)
+println("Le cout de la premiere heuristique est $a")
 
- V = voisins(current_instance, Heuristique)
+V = voisins(current_instance, Heuristique)
 
-#Heuristique2 = best_neighbor(current_instance, Heuristique)
+Heuristique2 = best_neighbor(current_instance, Heuristique)
 
-#c = KIRO2023.cost(Heuristique2,current_instance)
+c = KIRO2023.cost(Heuristique2,current_instance)
 
-#println(c)
+println("Le meilleur voisin a un cout de $c")
+
 
 #path1= "solutions/huge.json.json"
 #Soltangz = KIRO2023.read_solution(path1)
@@ -106,3 +107,4 @@ println(a)
 #KIRO2023.is_feasible(Solultime,current_instance)
 #KIRO2023.cost(Solultime,current_instance)
 #KIRO2023.write_solution(Solultime,"solutions/HUGE10000.json")
+

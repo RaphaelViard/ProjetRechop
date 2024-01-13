@@ -9,43 +9,33 @@ function copy_solution(solution::KIRO2023.Solution)
     return KIRO2023.Solution(turbine_links_copy, inter_station_cables_copy, substations_copy)
 end
 
-
-# Voisinage d'une solution réalisable : V est un voisin de S ssi on change le type et le land_cable d'une seule substation
 function voisins(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
     L = Vector{KIRO2023.Solution}()  # vecteur des voisins
 
     for i in 1:length(solution.substations)
         for j in 1:length(instance.substation_types)
             for k in 1:length(instance.land_substation_cable_types)
-                voisin = copy_solution(solution)
-                voisin.substations[i].substation_type = instance.substation_types[j].id
-                voisin.substations[i].land_cable_type = instance.land_substation_cable_types[k]
-                push!(L, voisin)
+                # On créé un nouveau vecteur pour les Substations du voisin
+                new_substations = copy(solution.substations)    
+                # On modifie le type de susbtation et le type de cable, tout en gardant le meme indicateur de position
+                new_substations[i] = KIRO2023.SubStation(id=solution.substations[i].id, substation_type=instance.substation_types[j].id, land_cable_type=instance.land_substation_cable_types[k].id)
+                voisin = KIRO2023.Solution(turbine_links=solution.turbine_links,inter_station_cables=solution.inter_station_cables, substations=new_substations)
+                push!(L,voisin)
             end
         end
     end
-
     return L
 end
-
-
-#L'erreur que vous obtenez, 
-#ERROR: setfield!: immutable struct of type SubStation cannot be changed, indique que vous essayez de modifier un champ d'une structure (SubStation dans ce cas) qui est 
-#déclarée comme une structure immuable (immutable). En Julia, les structures immuables ne peuvent pas être modifiées après leur création.
-
-#Créer une nouvelle structure avec les modifications : Si vous voulez maintenir l'immutabilité, créez une nouvelle structure SubStation au lieu de modifier les champs de la structure existante.
-
-#voisin.substations[i] = KIRO2023.SubStation(id=voisin.substations[i].id, substation_type=instance.substation_types[j].id, land_cable_type=instance.land_substation_cable_types[k])
 
 
 # Fonction qui retourne le meilleur voisin de la solution
 
 function best_neighbor(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
     L = voisins(instance,solution)
-    best_neighbor = nothing
+    best_neighbor = solution
 
     for neighbor in L
-        if KIRO2023.cost(instance, neighbor) < KIRO2023.cost(instance, best_neighbor) 
+        if KIRO2023.cost(neighbor, instance) < KIRO2023.cost(best_neighbor,instance) 
             best_neighbor = neighbor
         end
     end
