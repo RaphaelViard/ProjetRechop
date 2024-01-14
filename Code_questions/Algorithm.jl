@@ -1,4 +1,4 @@
-import .KIRO2023
+import KIRO2023
 
 # Créer une copie d'une variable Solution appelée solution_copy
 function copy_solution(solution::KIRO2023.Solution)
@@ -81,6 +81,27 @@ function voisins(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
 end
 
 
+
+function voisins2(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
+    L = Vector{KIRO2023.Solution}()  # vecteur des voisins
+    for i in 1:length(instance.substation_locations)
+        for j in (i+1):length(instance.substation_locations)
+            for p in 1:length(instance.substation_substation_cable_types)
+                new_inter_station_cables = copy(solution.inter_station_cables) 
+                if solution.inter_station_cables[i,j] > 0
+                    new_inter_station_cables[i,j] = p
+                    new_inter_station_cables[j,i] = p
+                end
+                voisin = KIRO2023.Solution(turbine_links=solution.turbine_links,inter_station_cables=new_inter_station_cables, substations=solution.substations)
+                push!(L,voisin)
+            end
+        end
+    end
+    return L
+end
+
+
+
 # Fonction qui retourne le meilleur voisin de la solution
 
 function best_neighbor(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
@@ -96,10 +117,45 @@ function best_neighbor(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
     return best_neighbor
 end
 
+function best_neighbor2(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+    L = voisins2(instance,solution)
+    best_neighbor = solution
+
+    for neighbor in L
+        if KIRO2023.cost(neighbor, instance) < KIRO2023.cost(best_neighbor,instance) 
+            best_neighbor = neighbor
+        end
+    end
+
+    return best_neighbor
+end
+
+
 function iter_best_neighbor(instance::KIRO2023.Instance,solution::KIRO2023.Solution,n::Int)
     best_neighbor_iter = solution
     for i in 1:n
         best_neighbor_iter = best_neighbor(instance,best_neighbor_iter)
     end
     return best_neighbor_iter
+end
+
+function iter_best_neighbor2(instance::KIRO2023.Instance,solution::KIRO2023.Solution,n::Int)
+    best_neighbor_iter = solution
+    for i in 1:n
+        best_neighbor_iter = best_neighbor2(instance,best_neighbor_iter)
+    end
+    return best_neighbor_iter
+end
+
+function best_neighbor_construction(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+    L = voisins(instance,solution)
+    best_neighbor = solution
+
+    for neighbor in L
+        if KIRO2023.construction_cost(neighbor, instance) < KIRO2023.construction_cost(best_neighbor,instance) 
+            best_neighbor = neighbor
+        end
+    end
+
+    return best_neighbor
 end
