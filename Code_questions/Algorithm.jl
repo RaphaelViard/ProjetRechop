@@ -23,7 +23,7 @@ function voisins(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
                 push!(L,voisin)
             end
         end
-    end
+    end 
     return L
 end
 
@@ -41,4 +41,12 @@ function best_neighbor(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
     end
 
     return best_neighbor
+end
+
+function iter_best_neighbor(instance::KIRO2023.Instance,solution::KIRO2023.Solution,n::Int)
+    best_neighbor_iter = solution
+    for i in 1:n
+        best_neighbor_iter = best_neighbor(instance,best_neighbor_iter)
+    end
+    return best_neighbor_iter
 end

@@ -1,4 +1,4 @@
-import KIRO2023
+import .KIRO2023
 
 include("Algorithm.jl")
 
@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_large)
+current_instance = KIRO2023.read_instance(chemin_small)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -76,39 +76,33 @@ for i in 1:CardVT
     turb_links[i]=Proches[k].id
 end
 
-uu=length(Proches)
 
-#st_cabl[Proches[1].id,Proches[2].id]=1
-#st_cabl[Proches[2].id,Proches[1].id]=1
-#st_cabl[Proches[3].id,Proches[4].id]=1
-#st_cabl[Proches[4].id,Proches[3].id]=1
+Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
 
-Heuristique1 = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
 
-KIRO2023.is_feasible(Heuristique1,current_instance)
 
-a = KIRO2023.cost(Heuristique1,current_instance)
 
+a = KIRO2023.cost(Heuristique,current_instance)
 println("Le cout de la premiere heuristique est $a")
 
 
 
-for i in 2:10
-    eval(Meta.parse("Heuristique$i = best_neighbor(current_instance, Heuristique$(i-1))"))
-end
-c = KIRO2023.cost(Heuristique10,current_instance)
+
+Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,10)
+
+c = KIRO2023.cost(Heuristique_voisins,current_instance)
+
 println("Le meilleur voisin a un cout de $c")
-KIRO2023.is_feasible(Heuristique10,current_instance)
-d = KIRO2023.operational_cost(Heuristique10,current_instance)
-e = KIRO2023.construction_cost(Heuristique10,current_instance)
+KIRO2023.is_feasible(Heuristique_voisins,current_instance)
+d = KIRO2023.operational_cost(Heuristique_voisins,current_instance)
+e = KIRO2023.construction_cost(Heuristique_voisins,current_instance)
 println("Cout operationnel : $d, cout de construction : $e")
+
+
 
 #path1= "solutions/huge.json.json"
 #Soltangz = KIRO2023.read_solution(path1)
 #KIRO2023.nb_station_locations(current_instance)
-#Solultime = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
-#size(Solultime.inter_station_cables)
-#KIRO2023.is_feasible(Solultime,current_instance)
-#KIRO2023.cost(Solultime,current_instance)
+#Heuristique1 = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
+#println(KIRO2023.is_feasible(Heuristique1,current_instance))
 #KIRO2023.write_solution(Solultime,"solutions/HUGE10000.json")
-
