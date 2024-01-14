@@ -42,8 +42,8 @@ function build_first_heuristic(instance::KIRO2023.Instance)
     Proches = find_nearest_substation(instance)
     minFIXCLANDCABLES = argmin([current_instance.land_substation_cable_types[i].fixed_cost for i in 1:length(current_instance.land_substation_cable_types)])
     minCOUTSS = argmin([current_instance.substation_types[i].cost for i in 1:length(current_instance.substation_types)])
-    for i in 1:length(Proches)
-        push!(sub,KIRO2023.SubStation(id=Proches[i].id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
+    for Proche in Proches
+        push!(sub,KIRO2023.SubStation(id=Proche.id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
     end   
     for i in 1:nb_WT
         dist=9999999
@@ -61,6 +61,43 @@ function build_first_heuristic(instance::KIRO2023.Instance)
     Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
     return turb_links,st_cabl,sub,Heuristique
 end
+
+function remove_list(liste, nombre)
+    return filter(x -> x != nombre, liste)
+end
+
+
+function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+    indicc = argmin([instance.substation_substation_cable_types[i].fixed_cost for i in 1:length(instance.substation_substation_cable_types)])
+    NSSbuilt = length(solution.substations)
+    Entiers_restants = [i for i in 1:NSSbuilt]
+    st_cabl2 = zeros(Int,length(instance.substation_locations),length(instance.substation_locations))
+    while length(Entiers_restants) >1
+        distances = Dict()
+        for i in Entiers_restants
+            k=0
+            dist_min = Inf
+            for j in Entiers_restants
+                if j != i
+                    dist = KIRO2023.distance_inter_station(current_instance,solution.substations[i].id,solution.substations[j].id)
+                    if dist < dist_min
+                        k=j
+                        dist_min = dist
+                    end
+                end
+            end
+            distances[i]=[copy(k),dist_min] 
+        end
+        s = Entiers_restants[argmin([distances[j][2] for j in Entiers_restants])] #Probleme ici, l'argmin qu'on vient chercher n'est pas le bon des qu'on a enlevé des gens de Entiers_restants
+        v = Int(distances[s][1])
+        st_cabl2[solution.substations[s].id,solution.substations[v].id]= indicc
+        st_cabl2[solution.substations[v].id,solution.substations[s].id] = indicc
+        Entiers_restants = remove_list(Entiers_restants,s)
+        Entiers_restants = remove_list(Entiers_restants,v)
+    end
+    return st_cabl2
+end
+
 
 function voisins(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
     L = Vector{KIRO2023.Solution}()  # vecteur des voisins
@@ -82,23 +119,25 @@ end
 
 
 
-function voisins2(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
+function voisins2(instance::KIRO2023.Instance, solution::KIRO2023.Solution) #Change les types de cable SS-SS
     L = Vector{KIRO2023.Solution}()  # vecteur des voisins
     for i in 1:length(instance.substation_locations)
         for j in (i+1):length(instance.substation_locations)
-            for p in 1:length(instance.substation_substation_cable_types)
-                new_inter_station_cables = copy(solution.inter_station_cables) 
-                if solution.inter_station_cables[i,j] > 0
+            if solution.inter_station_cables[i, j] > 0
+                for p in 1:length(instance.substation_substation_cable_types)
+                    new_inter_station_cables = copy(solution.inter_station_cables) 
                     new_inter_station_cables[i,j] = p
                     new_inter_station_cables[j,i] = p
+                    voisin = KIRO2023.Solution(turbine_links=solution.turbine_links, inter_station_cables=new_inter_station_cables, substations=solution.substations)
+                    push!(L, voisin)
                 end
-                voisin = KIRO2023.Solution(turbine_links=solution.turbine_links,inter_station_cables=new_inter_station_cables, substations=solution.substations)
-                push!(L,voisin)
             end
         end
     end
     return L
 end
+
+
 
 
 
