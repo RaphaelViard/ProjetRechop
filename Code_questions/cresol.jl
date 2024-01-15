@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_small)
+current_instance = KIRO2023.read_instance(chemin_huge)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
