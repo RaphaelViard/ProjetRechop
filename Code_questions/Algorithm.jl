@@ -1,4 +1,8 @@
 import KIRO2023
+#using Pkg
+#Pkg.add("Plots")
+using Plots
+using JSON
 
 # Créer une copie d'une variable Solution appelée solution_copy
 function copy_solution(solution::KIRO2023.Solution)
@@ -61,6 +65,11 @@ function build_first_heuristic(instance::KIRO2023.Instance)
     Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
     return turb_links,st_cabl,sub,Heuristique
 end
+
+function build_random_heuristic(instance::KIRO2023.Instance)
+
+end
+
 
 function remove_list(liste, nombre)
     return filter(x -> x != nombre, liste)
@@ -198,3 +207,33 @@ function best_neighbor_construction(instance::KIRO2023.Instance,solution::KIRO20
 
     return best_neighbor
 end
+
+
+
+function plot_locations(json_file)
+    data = JSON.parsefile(json_file)
+
+    wind_turbines = [(turbine["x"], turbine["y"]) for turbine in data["wind_turbines"]]
+    substations = [(substation["x"], substation["y"]) for substation in data["substation_locations"]]
+
+    min_x = min(minimum(map(p -> p[1], wind_turbines)), minimum(map(p -> p[1], substations))) - 2
+    max_x = max(maximum(map(p -> p[1], wind_turbines)), maximum(map(p -> p[1], substations))) + 2
+
+    min_y = min(minimum(map(p -> p[2], wind_turbines)), minimum(map(p -> p[2], substations))) - 2
+    max_y = max(maximum(map(p -> p[2], wind_turbines)), maximum(map(p -> p[2], substations))) + 2
+
+    plot(
+        scatter(map(p -> p[1], wind_turbines), map(p -> p[2], wind_turbines), color=:blue, label="Wind Turbines"),
+        scatter(map(p -> p[1], substations), map(p -> p[2], substations), color=:red, label="Substations"),
+        xlabel="X",
+        ylabel="Y",
+        xlims=(min_x, max_x),
+        ylims=(min_y, max_y),
+        legend=true
+    )
+end
+
+
+
+
+plot_locations2("instances/KIRO-huge.json")
