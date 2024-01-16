@@ -26,10 +26,10 @@ OMEGA = length(current_instance.wind_scenarios)
 
 
 
-turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic(current_instance)
+turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic2(current_instance)
 st_cabl2 = build_inter_station_cables(current_instance,Heuristique2)
 
-Heuristique = KIRO2023.Solution(turbine_links=turb_links,inter_station_cables=st_cabl,substations=sub)
+Heuristique = KIRO2023.Solution(turbine_links=turb_links,inter_station_cables=st_cabl2,substations=sub)
 
 println(KIRO2023.is_feasible(Heuristique,current_instance))
 a = KIRO2023.cost(Heuristique,current_instance)
@@ -41,7 +41,7 @@ println("Cout operationnel : $d, cout de construction : $e")
 
 
 
-Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,10)
+Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,5)
 
 
 KIRO2023.is_feasible(Heuristique_voisins,current_instance)
