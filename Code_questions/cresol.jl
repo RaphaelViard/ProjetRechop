@@ -24,7 +24,8 @@ CardET=CardVT*CardVS
 OMEGA = length(current_instance.wind_scenarios)
 
 
-
+println(length(find_nearest_substation(current_instance)))
+println(length(find_nearest_substation2(current_instance)))
 
 turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic2(current_instance)
 st_cabl2 = build_inter_station_cables(current_instance,Heuristique2)
