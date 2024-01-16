@@ -174,7 +174,7 @@ function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO20
             end
             distances[i]=[copy(k),dist_min] 
         end
-        s = Entiers_restants[argmin([distances[j][2] for j in Entiers_restants])] #Probleme ici, l'argmin qu'on vient chercher n'est pas le bon des qu'on a enlevé des gens de Entiers_restants
+        s = Entiers_restants[argmax([distances[j][2] for j in Entiers_restants])] #Probleme ici, l'argmin qu'on vient chercher n'est pas le bon des qu'on a enlevé des gens de Entiers_restants
         v = Int(distances[s][1])
         st_cabl2[solution.substations[s].id,solution.substations[v].id]= indicc
         st_cabl2[solution.substations[v].id,solution.substations[s].id] = indicc
