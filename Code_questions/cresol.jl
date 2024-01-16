@@ -53,8 +53,18 @@ d = KIRO2023.operational_cost(Heuristique_voisins,current_instance)
 e = KIRO2023.construction_cost(Heuristique_voisins,current_instance)
 println("Cout operationnel : $d, cout de construction : $e")
 
+# Heuristique avec des cables entre les stations
 
+Heuristique_voisins_inter_cables = link_same_capacity_SS(current_instance,Heuristique_voisins)
+KIRO2023.is_feasible(Heuristique_voisins_inter_cables,current_instance)
 
+f = KIRO2023.cost(Heuristique_voisins_inter_cables,current_instance)
+
+println("Le meilleur voisin avec cables entre stations a un cout de $f")
+
+g = KIRO2023.operational_cost(Heuristique_voisins_inter_cables,current_instance)
+h = KIRO2023.construction_cost(Heuristique_voisins_inter_cables,current_instance)
+println("Cout operationnel : $g, cout de construction : $h")
 
 #println("Heuristique2 a un cout de $c")
 #println("Cout operationnel : $d, cout de construction : $e")
