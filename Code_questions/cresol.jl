@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_huge)
+current_instance = KIRO2023.read_instance(chemin_large)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -27,7 +27,7 @@ OMEGA = length(current_instance.wind_scenarios)
 println(length(find_nearest_substation(current_instance)))
 println(length(find_nearest_substation2(current_instance)))
 
-turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic2(current_instance)
+turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic(current_instance)
 st_cabl2 = build_inter_station_cables(current_instance,Heuristique2)
 
 Heuristique = KIRO2023.Solution(turbine_links=turb_links,inter_station_cables=st_cabl2,substations=sub)
@@ -42,7 +42,7 @@ println("Cout operationnel : $d, cout de construction : $e")
 
 
 
-Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,5)
+Heuristique_voisins = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,Heuristique,10),10)
 
 
 KIRO2023.is_feasible(Heuristique_voisins,current_instance)
