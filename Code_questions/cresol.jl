@@ -54,6 +54,8 @@ e = KIRO2023.construction_cost(Heuristique_voisins,current_instance)
 println("Cout operationnel : $d, cout de construction : $e")
 
 
+
+
 #println("Heuristique2 a un cout de $c")
 #println("Cout operationnel : $d, cout de construction : $e")
 
@@ -63,4 +65,4 @@ println("Cout operationnel : $d, cout de construction : $e")
 #KIRO2023.nb_station_locations(current_instance)
 #Heuristique1 = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
 #println(KIRO2023.is_feasible(Heuristique1,current_instance))
-#KIRO2023.write_solution(Solultime,"solutions/HUGE10000.json")
+KIRO2023.write_solution(Heuristique_voisins,"solutions/large9400.json")
