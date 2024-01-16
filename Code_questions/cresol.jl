@@ -59,7 +59,6 @@ println("Cout operationnel : $d, cout de construction : $e")
 #println("Heuristique2 a un cout de $c")
 #println("Cout operationnel : $d, cout de construction : $e")
 
-
 #path1= "solutions/huge.json.json"
 #Soltangz = KIRO2023.read_solution(path1)
 #KIRO2023.nb_station_locations(current_instance)

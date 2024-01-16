@@ -272,7 +272,7 @@ function iter_best_neighbor2(instance::KIRO2023.Instance,solution::KIRO2023.Solu
     return best_neighbor_iter
 end
 
-function best_neighbor_construction(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+function best_neighbor_construction()
     L = voisins(instance,solution)
     best_neighbor = solution
 
@@ -285,6 +285,63 @@ function best_neighbor_construction(instance::KIRO2023.Instance,solution::KIRO20
     return best_neighbor
 end
 
+
+# On trouve les deux SS qui sont le plus semblables du point de vue de leur capacité (land_cable_rating et substation_rating)
+function find_same_capacity_SS(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+    substations::Vector{SubStation}
+    NSSbuilt = length(solution.substations)
+    Entiers_restants = [i for i in 1:NSSbuilt]
+
+    common_capcity = 0
+    capacity_difference = 99999999999999
+    (k_id,l_id) = (1,1)
+
+    for i in 1:NSSbuilt
+        id_i = solution.substations[i].id
+        SS_type_i = solution.substations[i].substation_type
+        land_cable_type_i = solution.substations[i].land_cable_type
+
+        SS_rating_i = substation_rating(instance,SS_type_i)
+        land_cable_rating_i = SS_cable_rating(instance,land_cable_type_i)
+
+        capacity_SS_i = min(SS_rating_i,land_cable_rating_i)
+
+        for j in i+1:length(NSSbuilt)
+            id_j = solution.substations[j].id
+            SS_type_j = solution.substations[j].substation_type
+            land_cable_type_j = solution.substations[j].land_cable_type
+
+            SS_rating_j = substation_rating(instance,SS_type_j)
+            and_cable_rating_j = SS_cable_rating(instance,land_cable_type_j)
+
+            capacity_SS_j = min(SS_rating_j,land_cable_rating_j)
+
+            new_capacity_difference = abs(capacity_SS_i-capacity_SS_j)
+
+            if  new_capacity_difference < capacity_difference
+                capacity_difference = new_capacity_difference
+                k=id_i
+                l=id_j
+                common_capacity = capacity_SS_i
+            end
+        end
+        return (k,l,common_capacity)
+    end
+end 
+
+function link_same_capacity_SS(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+    (k,l,common_capacity) = find_same_capacity_SS(instance,solution)
+    new_inter_station_cables= copy(solution.inter_station_cables)
+    # On cherche le cable qui permet de transporter autant d'électricité que la capacite commune
+    # i.e on cherche le cable de capacité directement supérieure à la capacité commune
+    i=1
+    while (inter_substation_cable_rating(instance,i)<common_capacity)
+        i=i+1
+    end
+    cable_id =i
+
+    new_inter_station_cables[k,l] = cable_id
+end
 
 
 function plot_locations_superposed(json_file)
@@ -313,4 +370,3 @@ end
 
 
 plot_locations_superposed("instances/KIRO-medium.json")
-
