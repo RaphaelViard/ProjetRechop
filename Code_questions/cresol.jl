@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_huge)
+current_instance = KIRO2023.read_instance(chemin_medium)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -41,7 +41,7 @@ println("Cout operationnel : $d, cout de construction : $e")
 
 
 
-Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,5)
+Heuristique_voisins = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,Heuristique,5),5)
 
 
 KIRO2023.is_feasible(Heuristique_voisins,current_instance)
