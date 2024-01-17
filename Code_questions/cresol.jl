@@ -1,4 +1,4 @@
-import .KIRO2023
+import KIRO2023
 
 include("Algorithm.jl")
 
@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_medium)
+current_instance = KIRO2023.read_instance(chemin_large)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -27,8 +27,7 @@ OMEGA = length(current_instance.wind_scenarios)
 
 
 turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic(current_instance)
-st_cabl2 = build_inter_station_cables(current_instance,Heuristique2)
-
+st_cabl2 = itt_best_cabl(current_instance,Heuristique2)
 Heuristique = KIRO2023.Solution(turbine_links=turb_links,inter_station_cables=st_cabl,substations=sub)
 
 
@@ -40,30 +39,20 @@ e = KIRO2023.construction_cost(Heuristique,current_instance)
 println("Cout operationnel : $d, cout de construction : $e")
 
 
+#Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,10)
+#KIRO2023.is_feasible(Heuristique_voisins,current_instance)
+#c = KIRO2023.cost(Heuristique_voisins,current_instance)
+#println("Le meilleur voisin a un cout de $c")
 
 
-Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,10)
-KIRO2023.is_feasible(Heuristique_voisins,current_instance)
-c = KIRO2023.cost(Heuristique_voisins,current_instance)
+KK = build_2ss(current_instance)
+KIRO2023.is_feasible(KK,current_instance)
+KIRO2023.cost(KK,current_instance)
+KK2 = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,KK,2),2)
+println(KIRO2023.cost(KK2,current_instance))
+println(KK2.substations[1].id)
+println(KK2.substations[2].id)
 
-println("Le meilleur voisin a un cout de $c")
-
-d = KIRO2023.operational_cost(Heuristique_voisins,current_instance)
-e = KIRO2023.construction_cost(Heuristique_voisins,current_instance)
-println("Cout operationnel : $d, cout de construction : $e")
-
-# Heuristique avec des cables entre les stations
-
-Heuristique_voisins_inter_cables = link_same_capacity_SS(current_instance,Heuristique_voisins)
-KIRO2023.is_feasible(Heuristique_voisins_inter_cables,current_instance)
-
-f = KIRO2023.cost(Heuristique_voisins_inter_cables,current_instance)
-
-println("Le meilleur voisin avec cables entre stations a un cout de $f")
-
-g = KIRO2023.operational_cost(Heuristique_voisins_inter_cables,current_instance)
-h = KIRO2023.construction_cost(Heuristique_voisins_inter_cables,current_instance)
-println("Cout operationnel : $g, cout de construction : $h")
 
 #println("Heuristique2 a un cout de $c")
 #println("Cout operationnel : $d, cout de construction : $e")
