@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_large)
+current_instance = KIRO2023.read_instance(chemin_medium)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -29,7 +29,8 @@ OMEGA = length(current_instance.wind_scenarios)
 turb_links, st_cabl,sub,Heuristique2 = build_first_heuristic(current_instance)
 st_cabl2 = build_inter_station_cables(current_instance,Heuristique2)
 
-Heuristique = KIRO2023.Solution(turbine_links=turb_links,inter_station_cables=st_cabl2,substations=sub)
+Heuristique = KIRO2023.Solution(turbine_links=turb_links,inter_station_cables=st_cabl,substations=sub)
+
 
 println(KIRO2023.is_feasible(Heuristique,current_instance))
 a = KIRO2023.cost(Heuristique,current_instance)
@@ -41,9 +42,7 @@ println("Cout operationnel : $d, cout de construction : $e")
 
 
 
-Heuristique_voisins = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,Heuristique,10),10)
-
-
+Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,10)
 KIRO2023.is_feasible(Heuristique_voisins,current_instance)
 c = KIRO2023.cost(Heuristique_voisins,current_instance)
 
@@ -56,13 +55,10 @@ println("Cout operationnel : $d, cout de construction : $e")
 
 
 
-#println("Heuristique2 a un cout de $c")
-#println("Cout operationnel : $d, cout de construction : $e")
-
 
 #path1= "solutions/huge.json.json"
 #Soltangz = KIRO2023.read_solution(path1)
 #KIRO2023.nb_station_locations(current_instance)
 #Heuristique1 = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
 #println(KIRO2023.is_feasible(Heuristique1,current_instance))
-#KIRO2023.write_solution(Heuristique_voisins,"solutions/large9400.json")
+#KIRO2023.write_solution(Heuristique_voisins,"solutions/small3416.json")

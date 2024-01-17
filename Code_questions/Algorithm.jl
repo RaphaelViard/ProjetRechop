@@ -88,6 +88,7 @@ function build_first_heuristic(instance::KIRO2023.Instance)
 end
 
 
+
 function build_first_heuristic2(instance::KIRO2023.Instance)
     nb_WT = length(current_instance.wind_turbines)
     nb_SS = length(current_instance.substation_locations)
@@ -117,34 +118,6 @@ function build_first_heuristic2(instance::KIRO2023.Instance)
     return turb_links,st_cabl,sub,Heuristique
 end
 
-function build_first_heuristic3(instance::KIRO2023.Instance)
-    nb_WT = length(current_instance.wind_turbines)
-    nb_SS = length(current_instance.substation_locations)
-    turb_links = zeros(Int,nb_WT)
-    st_cabl = zeros(Int,nb_SS,nb_SS)
-    sub = Vector{KIRO2023.SubStation}()
-    Proches = find_nearest_substation(instance)
-    minFIXCLANDCABLES = argmin([current_instance.land_substation_cable_types[i].fixed_cost for i in 1:length(current_instance.land_substation_cable_types)])
-    minCOUTSS = argmin([current_instance.substation_types[i].cost for i in 1:length(current_instance.substation_types)])
-    for Proche in Proches
-        push!(sub,KIRO2023.SubStation(id=Proche.id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
-    end   
-    for i in 1:nb_WT
-        dist=9999999
-        k=0
-        for j in 1:length(Proches)
-            newdist = KIRO2023.distance(current_instance.wind_turbines[i],Proches[j]) + KIRO2023.distance_to_land(instance,Proches[j].id)
-            if  newdist < dist
-                dist = newdist
-                k=j
-            end
-        end
-        turb_links[i]=Proches[k].id
-    end 
-    
-    Heuristique = KIRO2023.Solution(turbine_links = turb_links,inter_station_cables=st_cabl,substations=sub)
-    return turb_links,st_cabl,sub,Heuristique
-end
 
 
 
@@ -153,8 +126,8 @@ function remove_list(liste, nombre)
 end
 
 
-function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
-    indicc = argmin([instance.substation_substation_cable_types[i].fixed_cost for i in 1:length(instance.substation_substation_cable_types)])
+function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO2023.Solution,i)
+    #indicc = argmin([instance.substation_substation_cable_types[i].fixed_cost for i in 1:length(instance.substation_substation_cable_types)])
     NSSbuilt = length(solution.substations)
     Entiers_restants = [i for i in 1:NSSbuilt]
     st_cabl2 = zeros(Int,length(instance.substation_locations),length(instance.substation_locations))
@@ -176,12 +149,25 @@ function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO20
         end
         s = Entiers_restants[argmax([distances[j][2] for j in Entiers_restants])] #Probleme ici, l'argmin qu'on vient chercher n'est pas le bon des qu'on a enlevé des gens de Entiers_restants
         v = Int(distances[s][1])
-        st_cabl2[solution.substations[s].id,solution.substations[v].id]= indicc
-        st_cabl2[solution.substations[v].id,solution.substations[s].id] = indicc
+        st_cabl2[solution.substations[s].id,solution.substations[v].id]= i#ndicc
+        st_cabl2[solution.substations[v].id,solution.substations[s].id] = i#ndicc
         Entiers_restants = remove_list(Entiers_restants,s)
         Entiers_restants = remove_list(Entiers_restants,v)
     end
     return st_cabl2
+end
+
+function itt_best_cabl(instance::KIRO2023.Instance,solution::KIRO2023.Solution)
+    cout_min = Inf
+    k=-1
+    for i in 1:length(instance.substation_substation_cable_types)
+        Sol = KIRO2023.Solution(substations=solution.substations,inter_station_cables = build_inter_station_cables(instance,solution,i),turbine_links=solution.turbine_links)
+        if KIRO2023.cost(Sol,instance) < cout_min
+            cout_min = KIRO2023.cost(Sol,instance)
+            k=i
+        end
+    end
+    return build_inter_station_cables(instance,solution,k)
 end
 
 
@@ -223,7 +209,29 @@ function voisins2(instance::KIRO2023.Instance, solution::KIRO2023.Solution) #Voi
     return L
 end
 
-
+function voisins3(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
+    L = Vector{KIRO2023.Solution}()  # vecteur des voisins
+    for i in 1:length(instance.substation_locations)
+        indices = findall(x -> x == i, solution.turbine_links)
+        for k in 1:length(instance.substation_locations)
+            turbine2 = copy(solution.turbine_links)
+            for j in 1:length(indices)
+            #    if iseven(j)
+                    turbine2[indices[j]]=k
+            #    end
+            end
+            sub2 = copy(solution.substations)
+            for p in 1:length(sub2)
+                if sub2[p].id==i
+                    newSS = KIRO2023.SubStation(id=k,substation_type=sub2[p].substation_type,land_cable_type=sub2[p].land_cable_type)
+                    sub2[p]=newSS
+                end
+            end
+        push!(L,KIRO2023.Solution(turbine_links=turbine2,inter_station_cables=solution.inter_station_cables,substations=sub2))
+        end
+    end
+    return L
+end
 
 
 
@@ -312,5 +320,5 @@ function plot_locations_superposed(json_file)
 end
 
 
-plot_locations_superposed("instances/KIRO-medium.json")
+#plot_locations_superposed("instances/KIRO-medium.json")
 
