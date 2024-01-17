@@ -410,7 +410,7 @@ function build_2ss(instance::KIRO2023.Instance)
     nb_SS = length(instance.substation_locations)
     for i in 1:length(instance.substation_locations)
         for j in 1:length(instance.substation_locations)
-            if i!=j && instance.substation_locations[i].x >= 60 && instance.substation_locations[j].x >= 60
+            if i!=j && instance.substation_locations[i].x >= 43 && instance.substation_locations[j].x >= 43
                 turb_links = zeros(Int,nb_WT)
                 st_cabl = zeros(Int,nb_SS,nb_SS)
                 sub = Vector{KIRO2023.SubStation}()
@@ -453,7 +453,7 @@ function build_3ss(instance::KIRO2023.Instance)
     for i in 1:length(instance.substation_locations)
         for j in 1:length(instance.substation_locations)
             for p in 1:length(instance.substation_locations)
-                if i!=j && j!= p && i!=p && instance.substation_locations[i].x >= 60 && instance.substation_locations[j].x >= 60 && instance.substation_locations[p].x >= 60
+                if i!=j && j!= p && i!=p && instance.substation_locations[i].x >= 43 && instance.substation_locations[j].x >= 43 && instance.substation_locations[p].x >= 43
                     turb_links = zeros(Int,nb_WT)
                     st_cabl1 = zeros(Int,nb_SS,nb_SS)
                     st_cabl2= zeros(Int,nb_SS,nb_SS)
@@ -575,9 +575,12 @@ function build_4ss(instance::KIRO2023.Instance)
     return L[k]
 end
 
+function compute_new_heuristic(solution::KIRO2023.Solution,instance::KIRO2023.Instance)
+    #Merge 1 des substations a une autre en partant de buid_first_heuristic
+    turb = solution.turbine_links
+end
 
-
-plot_locations_superposed("instances/KIRO-large.json")
+plot_locations_superposed("instances/KIRO-medium.json")
 
 #huge : >62 : pour avoir les 2 dernieres rangées
 #large : >60

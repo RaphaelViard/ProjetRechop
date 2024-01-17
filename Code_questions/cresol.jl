@@ -8,11 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-<<<<<<< HEAD
-current_instance = KIRO2023.read_instance(chemin_large)
-=======
-current_instance = KIRO2023.read_instance(chemin_tiny)
->>>>>>> 25812e0b0ff26fbbf63f03a4240f577a67f03b68
+current_instance = KIRO2023.read_instance(chemin_medium)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -49,14 +45,14 @@ println("Cout operationnel : $d, cout de construction : $e")
 #println("Le meilleur voisin a un cout de $c")
 
 
-KK = build_2ss(current_instance)
-KIRO2023.is_feasible(KK,current_instance)
+KK = build_4ss(current_instance)
+println(KIRO2023.is_feasible(KK,current_instance))
 KIRO2023.cost(KK,current_instance)
-KK2 = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,KK,2),2)
+KK2 = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,KK,2),4)
 println(KIRO2023.cost(KK2,current_instance))
 println(KK2.substations[1].id)
 println(KK2.substations[2].id)
-
+#KIRO2023.write_solution(KK2,"solutions/small3320.json")
 
 #println("Heuristique2 a un cout de $c")
 #println("Cout operationnel : $d, cout de construction : $e")
