@@ -63,5 +63,3 @@ println(KK2.substations[2].id)
 #Heuristique1 = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
 #println(KIRO2023.is_feasible(Heuristique1,current_instance))
 #KIRO2023.write_solution(Heuristique_voisins,"solutions/small3416.json")
-
-
