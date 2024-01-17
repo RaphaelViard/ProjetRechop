@@ -1,4 +1,4 @@
-import .KIRO2023
+import KIRO2023
 #using Pkg
 #Pkg.add("Plots")
 using Plots
@@ -383,4 +383,203 @@ function plot_locations_superposed(json_file)
 end
 
 
-plot_locations_superposed("instances/KIRO-tiny.json")
+function build_medium(instance::KIRO2023.Instance)
+    nb_WT = length(instance.wind_turbines)
+    nb_SS = length(instance.substation_locations)
+    turb_links = zeros(Int,nb_WT)
+    st_cabl = zeros(Int,nb_SS,nb_SS)
+    sub = Vector{KIRO2023.SubStation}()
+    f = rand(1:length(instance.substation_substation_cable_types))
+    st_cabl[29,8] =f
+    st_cabl[8,29] = f
+    push!(sub, KIRO2023.SubStation(id=29,substation_type=1,land_cable_type=1))
+    push!(sub, KIRO2023.SubStation(id=8,substation_type=1,land_cable_type=1))
+    for i in 1:length(instance.wind_turbines)
+        if KIRO2023.distance(instance.wind_turbines[i],instance.substation_locations[29]) < KIRO2023.distance(instance.wind_turbines[i],instance.substation_locations[8])
+            turb_links[i]= 29
+        else
+            turb_links[i]=8
+        end
+    end
+    return KIRO2023.Solution(turb_links,st_cabl,sub)
+end
+
+function build_2ss(instance::KIRO2023.Instance)
+    L = Vector{KIRO2023.Solution}()
+    nb_WT = length(instance.wind_turbines)
+    nb_SS = length(instance.substation_locations)
+    for i in 1:length(instance.substation_locations)
+        for j in 1:length(instance.substation_locations)
+            if i!=j && instance.substation_locations[i].x >= 60 && instance.substation_locations[j].x >= 60
+                turb_links = zeros(Int,nb_WT)
+                st_cabl = zeros(Int,nb_SS,nb_SS)
+                sub = Vector{KIRO2023.SubStation}()
+                f = rand(1:length(instance.substation_substation_cable_types))
+                st_cabl[i,j] =f
+                st_cabl[j,i] = f
+                push!(sub, KIRO2023.SubStation(id=i,substation_type=1,land_cable_type=1))
+                push!(sub, KIRO2023.SubStation(id=j,substation_type=1,land_cable_type=1))
+                for k in 1:length(instance.wind_turbines)
+                    if KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[i]) < KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[j])
+                        turb_links[k]= i
+                    else
+                        turb_links[k]=j
+                    end
+                end
+                push!(L,KIRO2023.Solution(turb_links,st_cabl,sub))
+                push!(L,KIRO2023.Solution(turb_links,zeros(Int,nb_SS,nb_SS),sub))
+            end
+        end
+    end
+    k=0
+    dist_min = Inf
+    for i in 1:length(L)
+        if KIRO2023.cost(L[i],instance)<dist_min
+            dist_min = KIRO2023.cost(L[i],instance)
+            k=i
+        end
+    end
+    return L[k]
+end
+
+
+
+
+
+function build_3ss(instance::KIRO2023.Instance)
+    L = Vector{KIRO2023.Solution}()
+    nb_WT = length(instance.wind_turbines)
+    nb_SS = length(instance.substation_locations)
+    for i in 1:length(instance.substation_locations)
+        for j in 1:length(instance.substation_locations)
+            for p in 1:length(instance.substation_locations)
+                if i!=j && j!= p && i!=p && instance.substation_locations[i].x >= 60 && instance.substation_locations[j].x >= 60 && instance.substation_locations[p].x >= 60
+                    turb_links = zeros(Int,nb_WT)
+                    st_cabl1 = zeros(Int,nb_SS,nb_SS)
+                    st_cabl2= zeros(Int,nb_SS,nb_SS)
+                    st_cabl3= zeros(Int,nb_SS,nb_SS)
+                    sub = Vector{KIRO2023.SubStation}()
+                    f = rand(1:length(instance.substation_substation_cable_types))
+                    st_cabl[i,j] =f
+                    st_cabl[j,i] = f
+                    st_cabl2[i,p]=f
+                    st_cabl2[p,i]=f
+                    st_cabl3[j,p]=f
+                    st_cabl3[p,j]=f
+                    push!(sub, KIRO2023.SubStation(id=i,substation_type=1,land_cable_type=1))
+                    push!(sub, KIRO2023.SubStation(id=j,substation_type=1,land_cable_type=1))
+                    push!(sub,KIRO2023.SubStation(id=p,substation_type=1,land_cable_type=1))
+                    for k in 1:length(instance.wind_turbines)
+                        if KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[i]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[j]) && KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[i]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[p])
+                            turb_links[k]= i
+                        else
+                            if KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[j]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[p])
+                                turb_links[k]=j                             
+                            else
+                                turb_links[k]=p
+                            end
+                        end
+                    end
+                    push!(L,KIRO2023.Solution(turb_links,st_cabl1,sub))
+                    push!(L,KIRO2023.Solution(turb_links,st_cabl2,sub))
+                    push!(L,KIRO2023.Solution(turb_links,st_cabl3,sub))
+                    push!(L,KIRO2023.Solution(turb_links,zeros(Int,nb_SS,nb_SS),sub))
+                end
+            end
+        end
+    end
+    k=0
+    dist_min = Inf
+    for i in 1:length(L)
+        if KIRO2023.cost(L[i],instance)<dist_min
+            dist_min = KIRO2023.cost(L[i],instance)
+            k=i
+        end
+    end
+    return L[k]
+end
+
+function deuxieme_val(liste)
+    length(liste) < 2 && error("La liste ne contient pas au moins deux éléments.")
+    return maximum(setdiff(liste, [maximum(liste)]))
+end
+
+
+function build_ss_admissibles(instance::KIRO2023.Instance)
+    L = Vector{Int}()
+    alpha = deuxieme_val([instance.substation_locations[i].x for i in 1:length(instance.substation_locations)])
+    for i in 1:length(instance.substation_locations)
+        if instance.substation_locations[i].x >= alpha
+            push!(L,i)
+        end
+    end
+    return L 
+end
+
+function build_4ss(instance::KIRO2023.Instance)
+    L = Vector{KIRO2023.Solution}()
+    indices = build_ss_admissibles(instance)
+    nb_WT = length(instance.wind_turbines)
+    nb_SS = length(instance.substation_locations)
+    for i in 1:length(indices)
+        for j in 1:length(indices)
+            for p in 1:length(indices)
+                for ll in 1:length(indices)
+                        turb_links = zeros(Int,nb_WT)
+                        st_cabl1 = zeros(Int,nb_SS,nb_SS)
+                        st_cabl2= zeros(Int,nb_SS,nb_SS)
+                        st_cabl3= zeros(Int,nb_SS,nb_SS)
+                        sub = Vector{KIRO2023.SubStation}()
+                        f = rand(1:length(instance.substation_substation_cable_types))
+                        st_cabl[i,j] =f
+                        st_cabl[j,i] = f
+                        st_cabl2[i,p]=f
+                        st_cabl2[p,i]=f
+                        st_cabl2[j,ll]=f
+                        st_cabl2[ll,j]=f
+                        push!(sub, KIRO2023.SubStation(id=i,substation_type=1,land_cable_type=1))
+                        push!(sub, KIRO2023.SubStation(id=j,substation_type=1,land_cable_type=1))
+                        push!(sub,KIRO2023.SubStation(id=p,substation_type=1,land_cable_type=1))
+                        push!(sub,KIRO2023.SubStation(id=ll,substation_type=1,land_cable_type=1))
+                        for k in 1:length(instance.wind_turbines)
+                            if KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[i]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[j]) && KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[i]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[p]) && KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[i]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[ll])
+                                turb_links[k]= i
+                            else
+                                if KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[j]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[p]) && KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[j]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[ll])
+                                    turb_links[k]=j                             
+                                else
+                                    if KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[p]) <= KIRO2023.distance(instance.wind_turbines[k],instance.substation_locations[ll])
+                                        turb_links[k]=p
+                                    else
+                                        turb_links[k]=ll
+                                    end
+                                end
+                            end
+                        end
+                        push!(L,KIRO2023.Solution(turb_links,st_cabl1,sub))
+                        push!(L,KIRO2023.Solution(turb_links,st_cabl2,sub))
+                        push!(L,KIRO2023.Solution(turb_links,st_cabl3,sub))
+                        push!(L,KIRO2023.Solution(turb_links,zeros(Int,nb_SS,nb_SS),sub))
+                end
+            end
+        end
+    end
+    k=0
+    dist_min = Inf
+    for i in 1:length(L)
+        if KIRO2023.cost(L[i],instance)<dist_min
+            dist_min = KIRO2023.cost(L[i],instance)
+            k=i
+        end
+    end
+    return L[k]
+end
+
+
+
+plot_locations_superposed("instances/KIRO-large.json")
+
+#huge : >62 : pour avoir les 2 dernieres rangées
+#large : >60
+#medium : > 43
+#small: >35
