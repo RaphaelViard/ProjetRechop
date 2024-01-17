@@ -70,4 +70,4 @@ d = KIRO2023.operational_cost(b,current_instance)
 e = KIRO2023.construction_cost(b,current_instance)
 println("Cout operationnel : $d, cout de construction : $e")
 
-#KIRO2023.write_solution(a,"solutions/tiny104565.json")
+KIRO2023.write_solution(b,"solutions/tiny105641.json")
