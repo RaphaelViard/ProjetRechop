@@ -209,6 +209,7 @@ function voisins2(instance::KIRO2023.Instance, solution::KIRO2023.Solution) #Voi
     return L
 end
 
+
 function voisins3(instance::KIRO2023.Instance, solution::KIRO2023.Solution)
     L = Vector{KIRO2023.Solution}()  # vecteur des voisins
     for i in 1:length(instance.substation_locations)
@@ -382,4 +383,4 @@ function plot_locations_superposed(json_file)
 end
 
 
-plot_locations_superposed("instances/KIRO-medium.json")
+plot_locations_superposed("instances/KIRO-tiny.json")
