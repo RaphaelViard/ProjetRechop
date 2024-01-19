@@ -1,8 +1,9 @@
 import KIRO2023
 #using Pkg
-#Pkg.add("Plots")
+#Pkg.add("Random")
 using Plots
 using JSON
+using Random
 
 # Créer une copie d'une variable Solution appelée solution_copy
 function copy_solution(solution::KIRO2023.Solution)
@@ -625,17 +626,42 @@ function compute_new_heuristic(solution::KIRO2023.Solution,instance::KIRO2023.In
 end
 
 
+
+function extract_sublist(l, k)
+    # Vérifiez si la liste a une taille suffisante
+    if length(l) < k
+        error("La liste est plus petite que la taille de la sous-liste souhaitée.")
+    end
+    
+    # Générer un indice aléatoire sans remplacement
+    indices = randperm(length(l))[1:k]
+    
+    # Extraire les éléments correspondants dans la sous-liste
+    p = l[indices]
+    
+    return p
+end
+function cho!(l)
+    if isempty(l)
+        error("La liste est vide.")
+    end
+    index = rand(1:length(l))
+    selected_element = l[index]
+    deleteat!(l, index)
+    return selected_element
+end
+
 function random_sol(instance::KIRO2023.Instance)
-    nb_SSmax = length(instance.substation_locations)//3
+    nb_SSmax = length(instance.substation_locations)
     nbSS = rand(1:nb_SSmax)
     nb_WT = length(current_instance.wind_turbines)
     turb_links = zeros(Int,nb_WT)
-    st_cabl = zeros(Int,nb_SS,nb_SS)
+    st_cabl = zeros(Int,nb_SSmax,nb_SSmax)
     sub = Vector{KIRO2023.SubStation}()
     while  length(sub)<nbSS
         newid = rand(1:length(instance.substation_locations))
         if !(newid in [sub[i].id for i in 1:length(sub)])
-            push!(sub,KIRO2023.SubStation(id=newid,substation_type=1,land_cable_type=1))
+            push!(sub,KIRO2023.SubStation(id=newid,substation_type=rand(1:length(instance.substation_types)),land_cable_type=rand(1:length(instance.land_substation_cable_types))))
         end
     end
     listess = [sub[i].id for i in 1:length(sub)]
@@ -643,15 +669,29 @@ function random_sol(instance::KIRO2023.Instance)
         turb_links[i] = rand(listess)
     end
     Sol1 = KIRO2023.Solution(turb_links,st_cabl,sub)
-    st_cabl2=itt_best_cabl(instance,Sol1)
-    Sol11 = iter_best_neighbor(instance,Sol1,10)
-    Sol2 = KIRO2023.Solution(turb_links,st_cabl2,sub)
-    Sol22 =iter_best_neighbor(instance,Sol2,10)
-    if KIRO2023.cost(Sol11,instance) < KIRO2023.cost(Sol22,instance)
-        return KIRO2023.cost(Sol11,instance),Sol11
-    else
-        return KIRO2023.cost(Sol22,instance),Sol22
+    if nbSS > 1
+        k = Int(rand(1:nbSS//2))
+        st_cabl22 = zeros(Int,nb_SSmax,nb_SSmax)
+        XX = extract_sublist(listess,2*k)
+        while length(XX)>0
+            i = chorem!(XX)
+            j = chorem!(XX)
+            ff = rand(1:length(instance.substation_substation_cable_types))
+            st_cabl22[i,j]=ff
+            st_cabl22[j,i]=ff
+        end
+    
+    #st_cabl2=itt_best_cabl(instance,Sol1)
+    #Sol11 = iter_best_neighbor(instance,Sol1,10)
+        Sol2 = KIRO2023.Solution(turb_links,st_cabl22,sub)
+
+    #Sol22 =iter_best_neighbor(instance,Sol2,10)
+        if KIRO2023.cost(Sol2,instance) < KIRO2023.cost(Sol1,instance)
+            return KIRO2023.cost(Sol2,instance),Sol2
+        end
     end
+    return KIRO2023.cost(Sol1,instance),Sol1
+
 end
 
 function iter_random(instance::KIRO2023.Instance,n::Int)

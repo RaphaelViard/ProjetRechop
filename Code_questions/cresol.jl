@@ -49,10 +49,18 @@ a,b,c,KK = build_first_heuristic(current_instance)
 
 
 
-cost,KK = random_sol(current_instance)
+#cost,KK = random_sol(current_instance)
 
-cost,sol=iter_random(current_instance,20)
-
-if cost<7057
-    write_solution(sol,"solutions/NEWMEDIUM.json")
+for i in 1:500
+    cost,sol=iter_random(current_instance,500)
+    println("début du best neighbor :")
+    soly=iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,sol,5),30)
+    println("Cout apres random ET apres best neighb :")
+    println(KIRO2023.cost(soly,current_instance))
+    if KIRO2023.cost(soly,current_instance)<3321
+        KIRO2023.write_solution(soly,"solutions/medium$(KIRO2023.cost(soly,current_instance)).json")
+    end
 end
+
+#sol = KIRO2023.read_solution("solutions/large8864.json",current_instance)
+#KIRO2023.is_feasible(sol,current_instance)
