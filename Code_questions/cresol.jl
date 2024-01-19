@@ -39,27 +39,20 @@ e = KIRO2023.construction_cost(Heuristique,current_instance)
 println("Cout operationnel : $d, cout de construction : $e")
 
 
-#Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,10)
+#Heuristique_voisins = iter_best_neighbor(current_instance,Heuristique,5)
 #KIRO2023.is_feasible(Heuristique_voisins,current_instance)
 #c = KIRO2023.cost(Heuristique_voisins,current_instance)
 #println("Le meilleur voisin a un cout de $c")
 
 
-KK = build_4ss(current_instance)
-println(KIRO2023.is_feasible(KK,current_instance))
-KIRO2023.cost(KK,current_instance)
-KK2 = iter_best_neighbor(current_instance,iter_best_neighbor2(current_instance,KK,2),4)
-println(KIRO2023.cost(KK2,current_instance))
-println(KK2.substations[1].id)
-println(KK2.substations[2].id)
-#KIRO2023.write_solution(KK2,"solutions/small3320.json")
+a,b,c,KK = build_first_heuristic(current_instance)
 
-#println("Heuristique2 a un cout de $c")
-#println("Cout operationnel : $d, cout de construction : $e")
 
-#path1= "solutions/huge.json.json"
-#Soltangz = KIRO2023.read_solution(path1)
-#KIRO2023.nb_station_locations(current_instance)
-#Heuristique1 = KIRO2023.Solution(turbine_links = Soltangz.turbine_links,inter_station_cables=zeros(Int,81,81),substations=Soltangz.substations)
-#println(KIRO2023.is_feasible(Heuristique1,current_instance))
-#KIRO2023.write_solution(Heuristique_voisins,"solutions/small3416.json")
+
+cost,KK = random_sol(current_instance)
+
+cost,sol=iter_random(current_instance,20)
+
+if cost<7057
+    write_solution(sol,"solutions/NEWMEDIUM.json")
+end

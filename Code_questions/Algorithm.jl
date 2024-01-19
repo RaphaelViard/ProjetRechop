@@ -71,7 +71,7 @@ function build_first_heuristic(instance::KIRO2023.Instance)
         push!(sub,KIRO2023.SubStation(id=Proche.id, substation_type=minCOUTSS,land_cable_type=minFIXCLANDCABLES) )
     end   
     for i in 1:nb_WT
-        dist=9999999
+        dist =9999999
         k=0
         for j in 1:length(Proches)
             newdist = KIRO2023.distance(current_instance.wind_turbines[i],Proches[j])
@@ -126,7 +126,7 @@ function remove_list(liste, nombre)
 end
 
 
-function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO2023.Solution,i)
+function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO2023.Solution,op)
     #indicc = argmin([instance.substation_substation_cable_types[i].fixed_cost for i in 1:length(instance.substation_substation_cable_types)])
     NSSbuilt = length(solution.substations)
     Entiers_restants = [i for i in 1:NSSbuilt]
@@ -149,8 +149,8 @@ function build_inter_station_cables(instance::KIRO2023.Instance,solution::KIRO20
         end
         s = Entiers_restants[argmax([distances[j][2] for j in Entiers_restants])] #Probleme ici, l'argmin qu'on vient chercher n'est pas le bon des qu'on a enlevé des gens de Entiers_restants
         v = Int(distances[s][1])
-        st_cabl2[solution.substations[s].id,solution.substations[v].id]= i#ndicc
-        st_cabl2[solution.substations[v].id,solution.substations[s].id] = i#ndicc
+        st_cabl2[solution.substations[s].id,solution.substations[v].id]= op#ndicc
+        st_cabl2[solution.substations[v].id,solution.substations[s].id] = op#ndicc
         Entiers_restants = remove_list(Entiers_restants,s)
         Entiers_restants = remove_list(Entiers_restants,v)
     end
@@ -384,25 +384,33 @@ end
 
 
 function build_medium(instance::KIRO2023.Instance)
+    n=18
+    p=23
     nb_WT = length(instance.wind_turbines)
     nb_SS = length(instance.substation_locations)
     turb_links = zeros(Int,nb_WT)
     st_cabl = zeros(Int,nb_SS,nb_SS)
     sub = Vector{KIRO2023.SubStation}()
     f = rand(1:length(instance.substation_substation_cable_types))
-    st_cabl[29,8] =f
-    st_cabl[8,29] = f
-    push!(sub, KIRO2023.SubStation(id=29,substation_type=1,land_cable_type=1))
-    push!(sub, KIRO2023.SubStation(id=8,substation_type=1,land_cable_type=1))
+    st_cabl[n,p] =f
+    st_cabl[p,n] = f
+    push!(sub, KIRO2023.SubStation(id=n,substation_type=1,land_cable_type=1))
+    push!(sub, KIRO2023.SubStation(id=p,substation_type=1,land_cable_type=1))
     for i in 1:length(instance.wind_turbines)
-        if KIRO2023.distance(instance.wind_turbines[i],instance.substation_locations[29]) < KIRO2023.distance(instance.wind_turbines[i],instance.substation_locations[8])
-            turb_links[i]= 29
+        if KIRO2023.distance(instance.wind_turbines[i],instance.substation_locations[n]) < KIRO2023.distance(instance.wind_turbines[i],instance.substation_locations[p])
+            turb_links[i]= n
         else
-            turb_links[i]=8
+            turb_links[i]=p
         end
     end
-    return KIRO2023.Solution(turb_links,st_cabl,sub)
+    if KIRO2023.cost(KIRO2023.Solution(turb_links,st_cabl,sub),instance) < KIRO2023.cost(KIRO2023.Solution(turb_links,zeros(Int,nb_SS,nb_SS),sub),instance)
+        return KIRO2023.Solution(turb_links,st_cabl,sub)
+    else
+        return KIRO2023.Solution(turb_links,zeros(Int,nb_SS,nb_SS),sub)
+    end
 end
+
+
 
 function build_2ss(instance::KIRO2023.Instance)
     L = Vector{KIRO2023.Solution}()
@@ -410,7 +418,7 @@ function build_2ss(instance::KIRO2023.Instance)
     nb_SS = length(instance.substation_locations)
     for i in 1:length(instance.substation_locations)
         for j in 1:length(instance.substation_locations)
-            if i!=j && instance.substation_locations[i].x >= 43 && instance.substation_locations[j].x >= 43
+            if i!=j && instance.substation_locations[i].x >= 63 && instance.substation_locations[j].x >= 63
                 turb_links = zeros(Int,nb_WT)
                 st_cabl = zeros(Int,nb_SS,nb_SS)
                 sub = Vector{KIRO2023.SubStation}()
@@ -453,7 +461,7 @@ function build_3ss(instance::KIRO2023.Instance)
     for i in 1:length(instance.substation_locations)
         for j in 1:length(instance.substation_locations)
             for p in 1:length(instance.substation_locations)
-                if i!=j && j!= p && i!=p && instance.substation_locations[i].x >= 43 && instance.substation_locations[j].x >= 43 && instance.substation_locations[p].x >= 43
+                if i!=j && j!= p && i!=p && instance.substation_locations[i].x <=  60 && instance.substation_locations[i].x >=  40 && instance.substation_locations[j].x <=  60 && instance.substation_locations[j].x >=  40 && instance.substation_locations[p].x <=  60 && instance.substation_locations[p].x >=  40
                     turb_links = zeros(Int,nb_WT)
                     st_cabl1 = zeros(Int,nb_SS,nb_SS)
                     st_cabl2= zeros(Int,nb_SS,nb_SS)
@@ -509,7 +517,7 @@ function build_ss_admissibles(instance::KIRO2023.Instance)
     L = Vector{Int}()
     alpha = deuxieme_val([instance.substation_locations[i].x for i in 1:length(instance.substation_locations)])
     for i in 1:length(instance.substation_locations)
-        if instance.substation_locations[i].x >= alpha
+        if instance.substation_locations[i].x > 63
             push!(L,i)
         end
     end
@@ -526,17 +534,17 @@ function build_4ss(instance::KIRO2023.Instance)
             for p in 1:length(indices)
                 for ll in 1:length(indices)
                         turb_links = zeros(Int,nb_WT)
-                        st_cabl1 = zeros(Int,nb_SS,nb_SS)
-                        st_cabl2= zeros(Int,nb_SS,nb_SS)
-                        st_cabl3= zeros(Int,nb_SS,nb_SS)
+#                        st_cabl1 = zeros(Int,nb_SS,nb_SS)
+#                        st_cabl2= zeros(Int,nb_SS,nb_SS)
+#                        st_cabl3= zeros(Int,nb_SS,nb_SS)
                         sub = Vector{KIRO2023.SubStation}()
                         f = rand(1:length(instance.substation_substation_cable_types))
                         st_cabl[i,j] =f
                         st_cabl[j,i] = f
-                        st_cabl2[i,p]=f
-                        st_cabl2[p,i]=f
-                        st_cabl2[j,ll]=f
-                        st_cabl2[ll,j]=f
+#                        st_cabl2[i,p]=f
+#                        st_cabl2[p,i]=f
+#                        st_cabl2[j,ll]=f
+#                        st_cabl2[ll,j]=f
                         push!(sub, KIRO2023.SubStation(id=i,substation_type=1,land_cable_type=1))
                         push!(sub, KIRO2023.SubStation(id=j,substation_type=1,land_cable_type=1))
                         push!(sub,KIRO2023.SubStation(id=p,substation_type=1,land_cable_type=1))
@@ -556,9 +564,9 @@ function build_4ss(instance::KIRO2023.Instance)
                                 end
                             end
                         end
-                        push!(L,KIRO2023.Solution(turb_links,st_cabl1,sub))
-                        push!(L,KIRO2023.Solution(turb_links,st_cabl2,sub))
-                        push!(L,KIRO2023.Solution(turb_links,st_cabl3,sub))
+ #                       push!(L,KIRO2023.Solution(turb_links,st_cabl1,sub))
+ #                       push!(L,KIRO2023.Solution(turb_links,st_cabl2,sub))
+ #                       push!(L,KIRO2023.Solution(turb_links,st_cabl3,sub))
                         push!(L,KIRO2023.Solution(turb_links,zeros(Int,nb_SS,nb_SS),sub))
                 end
             end
@@ -575,12 +583,92 @@ function build_4ss(instance::KIRO2023.Instance)
     return L[k]
 end
 
+
 function compute_new_heuristic(solution::KIRO2023.Solution,instance::KIRO2023.Instance)
-    #Merge 1 des substations a une autre en partant de buid_first_heuristic
-    turb = solution.turbine_links
+    L = Vector{KIRO2023.Solution}()
+    turb_links1 = solution.turbine_links
+    st_cabl1 = solution.inter_station_cables
+    sub1 = solution.substations
+    SSused = []
+    for ss in turb_links1
+        if !(ss in SSused)
+            push!(SSused,ss)
+        end
+    end
+    for i in SSused
+        for j in SSused
+            if j!=i
+                turb = copy(turb_links1)
+                st_cabl = copy(st_cabl1)
+                sub = copy(sub1)
+                for p in 1:length(turb)
+                    if turb[p] == i
+                        turb[p] = j
+                    end
+                end
+                u = [a.id for a in sub]
+                indice = findfirst(x -> x == i, u)
+                splice!(sub,indice) 
+                push!(L,KIRO2023.Solution(turbine_links=turb,inter_station_cables=st_cabl,substations=sub))
+            end
+        end
+    end
+    k=0
+    dist_min = Inf
+    for i in 1:length(L)
+        if KIRO2023.cost(L[i],instance)<dist_min
+            dist_min = KIRO2023.cost(L[i],instance)
+            k=i
+        end
+    end
+    return L[k]
 end
 
-plot_locations_superposed("instances/KIRO-medium.json")
+
+function random_sol(instance::KIRO2023.Instance)
+    nb_SSmax = length(instance.substation_locations)//3
+    nbSS = rand(1:nb_SSmax)
+    nb_WT = length(current_instance.wind_turbines)
+    turb_links = zeros(Int,nb_WT)
+    st_cabl = zeros(Int,nb_SS,nb_SS)
+    sub = Vector{KIRO2023.SubStation}()
+    while  length(sub)<nbSS
+        newid = rand(1:length(instance.substation_locations))
+        if !(newid in [sub[i].id for i in 1:length(sub)])
+            push!(sub,KIRO2023.SubStation(id=newid,substation_type=1,land_cable_type=1))
+        end
+    end
+    listess = [sub[i].id for i in 1:length(sub)]
+    for i in 1:length(turb_links)
+        turb_links[i] = rand(listess)
+    end
+    Sol1 = KIRO2023.Solution(turb_links,st_cabl,sub)
+    st_cabl2=itt_best_cabl(instance,Sol1)
+    Sol11 = iter_best_neighbor(instance,Sol1,5)
+    Sol2 = KIRO2023.Solution(turb_links,st_cabl2,sub)
+    Sol22 =iter_best_neighbor(instance,Sol2,10)
+    if KIRO2023.cost(Sol11,instance) < KIRO2023.cost(Sol22,instance)
+        return KIRO2023.cost(Sol11,instance),Sol11
+    else
+        return KIRO2023.cost(Sol22,instance),Sol22
+    end
+end
+
+function iter_random(instance::KIRO2023.Instance,n::Int)
+    cout_min,Sol_min =random_sol(instance)
+    println(cout_min)
+    for i in 1:n
+        cout,sol=random_sol(instance)
+        if cout<cout_min
+            cout_min=cout
+            Sol_min=sol
+            println(cout_min)
+        end
+    end
+    return cout_min,Sol_min
+end
+
+#plot_locations_superposed("instances/KIRO-medium.json")
 
 #huge : >62 : pour avoir les 2 dernieres rangées
 #large : >60
