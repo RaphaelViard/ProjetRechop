@@ -644,7 +644,7 @@ function random_sol(instance::KIRO2023.Instance)
     end
     Sol1 = KIRO2023.Solution(turb_links,st_cabl,sub)
     st_cabl2=itt_best_cabl(instance,Sol1)
-    Sol11 = iter_best_neighbor(instance,Sol1,5)
+    Sol11 = iter_best_neighbor(instance,Sol1,10)
     Sol2 = KIRO2023.Solution(turb_links,st_cabl2,sub)
     Sol22 =iter_best_neighbor(instance,Sol2,10)
     if KIRO2023.cost(Sol11,instance) < KIRO2023.cost(Sol22,instance)
