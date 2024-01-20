@@ -10,6 +10,11 @@ chemin_huge = "instances/KIRO-huge.json"
 
 current_instance = KIRO2023.read_instance(chemin_small)
 
+small_instance = KIRO2023.read_instance(chemin_small)
+medium_instance = KIRO2023.read_instance(chemin_medium)
+large_instance = KIRO2023.read_instance(chemin_large)
+huge_instance = KIRO2023.read_instance(chemin_huge)
+
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
 CardVS=nb_SS
@@ -69,26 +74,43 @@ a,b,c,KK = build_first_heuristic(current_instance)
 #end
 
 
-sol = KIRO2023.read_solution("solutions/small3249.json",current_instance)
+sol = KIRO2023.read_solution("solutions/small3320.json",current_instance)
+println(KIRO2023.is_feasible(sol,current_instance))
 println(KIRO2023.cost(iter_best_neighbor(current_instance,sol,2),current_instance))
 println(length(sol.substations))
-new_turb = zeros(Int,length(current_instance.wind_turbines))
+new_turb = copy(sol.turbine_links)
 for i in 1:length(new_turb)
     k=-1
     distmin=Inf
     for j in 1:length(sol.substations)
-        if KIRO2023.distance(current_instance.substation_locations[sol.substations[j].id],current_instance.wind_turbines[i])< distmin
+        if KIRO2023.distance(current_instance.substation_locations[sol.substations[j].id],current_instance.wind_turbines[i])< distmin && (j in [sol.substations[pp].id for pp in 1:length(sol.substations)])
             distmin= KIRO2023.distance(current_instance.substation_locations[sol.substations[j].id],current_instance.wind_turbines[i])
-            k=j
+            new_turb[i]=j
         end
-        new_turb[i]=k
     end
 end
 
 newsol = KIRO2023.Solution(new_turb,sol.inter_station_cables,sol.substations)
-println(KIRO2023.cost(newsol,current_instance))
-newwsol = iter_best_neighbor(current_instance,newsol,20)
-println(KIRO2023.cost(newwsol,current_instance))
-KIRO2023.write_solution(newwsol,"solutions/small2318.json")
+#println(KIRO2023.cost(newsol,current_instance))
+#newwsol = iter_best_neighbor(current_instance,newsol,20)
+#println(KIRO2023.is_feasible(newwsol,current_instance))
+#println(KIRO2023.cost(newwsol,current_instance))
+#KIRO2023.write_solution(newwsol,"solutions/small2318.json")
+
+
+#solsmall = KIRO2023.read_solution("solutions/small2318.json",small_instance)
+#solmedium = KIRO2023.read_solution("solutions/medium4766.json",medium_instance)
+#sollarge = KIRO2023.read_solution("solutions/large6023.json",large_instance)
+#solhuge = KIRO2023.read_solution("solutions/huge5771.json",huge_instance)
+#println(KIRO2023.is_feasible(solsmall,small_instance))
+#println(KIRO2023.cost(solsmall,small_instance))
+#println(KIRO2023.is_feasible(solmedium,medium_instance))
+#println(KIRO2023.cost(solmedium,medium_instance))
+#println(KIRO2023.is_feasible(sollarge,large_instance))
+#println(KIRO2023.cost(sollarge,large_instance))
+#println(KIRO2023.is_feasible(solhuge,huge_instance))
+#println(KIRO2023.cost(solhuge,huge_instance))
+
+
 
 
