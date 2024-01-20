@@ -674,8 +674,8 @@ function random_sol(instance::KIRO2023.Instance)
         st_cabl22 = zeros(Int,nb_SSmax,nb_SSmax)
         XX = extract_sublist(listess,2*k)
         while length(XX)>0
-            i = chorem!(XX)
-            j = chorem!(XX)
+            i = cho!(XX)
+            j = cho!(XX)
             ff = rand(1:length(instance.substation_substation_cable_types))
             st_cabl22[i,j]=ff
             st_cabl22[j,i]=ff
