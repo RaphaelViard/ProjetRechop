@@ -8,7 +8,7 @@ chemin_medium = "instances/KIRO-medium.json"
 chemin_large = "instances/KIRO-large.json"
 chemin_huge = "instances/KIRO-huge.json"
 
-current_instance = KIRO2023.read_instance(chemin_medium)
+current_instance = KIRO2023.read_instance(chemin_huge)
 
 nb_WT = length(current_instance.wind_turbines) #Nombre de wind_turbine dans notre instance
 nb_SS = length(current_instance.substation_locations) #Nombre de substation dans notre instance
@@ -55,19 +55,19 @@ for i in 1:10000
     cost,sol=iter_random(current_instance,500)
     cost2,sol2=iter_random(current_instance,5)
     println("début du best neighbor :")
-    soly=iter_best_neighbor2(current_instance,iter_best_neighbor(current_instance,sol,30),5)
-    soly2=iter_best_neighbor2(current_instance,iter_best_neighbor(current_instance,sol2,30),5)
+    soly=iter_best_neighbor2(current_instance,iter_best_neighbor(current_instance,sol,10),5)
+    soly2=iter_best_neighbor2(current_instance,iter_best_neighbor(current_instance,sol2,10),5)
     println("Cout apres random ET apres best neighb :")
     println(KIRO2023.cost(soly,current_instance))
     println(KIRO2023.cost(soly2,current_instance))
-    if KIRO2023.cost(soly,current_instance)<6800
-        KIRO2023.write_solution(soly,"solutions/medium$(KIRO2023.cost(soly,current_instance)).json")
+    if KIRO2023.cost(soly,current_instance)<5771
+        KIRO2023.write_solution(soly,"solutions/large$(KIRO2023.cost(soly,current_instance)).json")
     end
-    if KIRO2023.cost(soly2,current_instance)<6800
-        KIRO2023.write_solution(soly,"solutions/medium$(KIRO2023.cost(soly2,current_instance)).json")
+    if KIRO2023.cost(soly2,current_instance)<5771
+        KIRO2023.write_solution(soly,"solutions/large$(KIRO2023.cost(soly2,current_instance)).json")
     end
-    
 end
 
-#sol = KIRO2023.read_solution("solutions/medium6758.json",current_instance)
-#KIRO2023.is_feasible(sol,current_instance)
+#sol = KIRO2023.read_solution("solutions/huge5771.json",current_instance)
+#println(KIRO2023.cost(iter_best_neighbor(current_instance,sol,2),current_instance))
+#println(length(sol.substations))
