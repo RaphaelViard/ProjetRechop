@@ -653,7 +653,7 @@ end
 
 function random_sol(instance::KIRO2023.Instance)
     nb_SSmax = length(instance.substation_locations)
-    nbSS = rand(2:3)#rand(1:nb_SSmax)
+    nbSS = 3#rand(1:nb_SSmax)
     nb_WT = length(current_instance.wind_turbines)
     turb_links = zeros(Int,nb_WT)
     st_cabl = zeros(Int,nb_SSmax,nb_SSmax)
@@ -670,24 +670,26 @@ function random_sol(instance::KIRO2023.Instance)
     end
     Sol1 = KIRO2023.Solution(turb_links,st_cabl,sub)
     if nbSS > 1
-        k = Int(rand(1:nbSS//2))
-        st_cabl22 = zeros(Int,nb_SSmax,nb_SSmax)
-        XX = extract_sublist(listess,2*k)
-        while length(XX)>0
-            i = cho!(XX)
-            j = cho!(XX)
-            ff = rand(1:length(instance.substation_substation_cable_types))
-            st_cabl22[i,j]=ff
-            st_cabl22[j,i]=ff
-        end
+        k = 0#Int(rand(1:nbSS//2))
+        if k>0
+            st_cabl22 = zeros(Int,nb_SSmax,nb_SSmax)
+            XX = extract_sublist(listess,2*k)
+            while length(XX)>0
+                i = cho!(XX)
+                j = cho!(XX)
+                ff = rand(1:length(instance.substation_substation_cable_types))
+                st_cabl22[i,j]=ff
+                st_cabl22[j,i]=ff
+            end
     
     #st_cabl2=itt_best_cabl(instance,Sol1)
     #Sol11 = iter_best_neighbor(instance,Sol1,10)
-        Sol2 = KIRO2023.Solution(turb_links,st_cabl22,sub)
+            Sol2 = KIRO2023.Solution(turb_links,st_cabl22,sub)
 
     #Sol22 =iter_best_neighbor(instance,Sol2,10)
-        if KIRO2023.cost(Sol2,instance) < KIRO2023.cost(Sol1,instance)
-            return KIRO2023.cost(Sol2,instance),Sol2
+            if KIRO2023.cost(Sol2,instance) < KIRO2023.cost(Sol1,instance)
+                return KIRO2023.cost(Sol2,instance),Sol2
+            end
         end
     end
     return KIRO2023.cost(Sol1,instance),Sol1
