@@ -653,7 +653,7 @@ end
 
 function random_sol(instance::KIRO2023.Instance)
     nb_SSmax = length(instance.substation_locations)
-    nbSS = rand(1:9)#rand(1:nb_SSmax)
+    nbSS = rand(2:3)#rand(1:nb_SSmax)
     nb_WT = length(current_instance.wind_turbines)
     turb_links = zeros(Int,nb_WT)
     st_cabl = zeros(Int,nb_SSmax,nb_SSmax)
